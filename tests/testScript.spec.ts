@@ -2,7 +2,7 @@ import { test,expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 
 
-test('test', async ({ page }) => {
+test('test', async ({ page,context}) => {
 
 
     // Step 1: Login to the application
@@ -62,8 +62,13 @@ test('test', async ({ page }) => {
     await page.getByRole('listbox', { name: 'Payment Mode' }).click();
     await page.getByRole('listbox', { name: 'Payment Mode' }).locator('div').nth(3).click();
     await page.getByText('Cash').click();
-    await page.getByRole('button', { name: 'Pay', exact: true }).click();
+    const [newPage] = await Promise.all([
+        (await context.waitForEvent('page').then(page => page)),
+        await page.getByRole('button', { name: 'Pay', exact: true }).click()
+    ])
     await page.waitForLoadState('networkidle')
+    await newPage.bringToFront()
+    await expect(newPage).toHaveURL(/.*/)
     
 
 });
